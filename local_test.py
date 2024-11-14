@@ -3,14 +3,14 @@
 import logging
 from datetime import datetime, timedelta
 
-from pregnancy_tracker import ScreenUI, Pregnancy
+from birthday_tracker import ScreenUI, Birthday
 
 logging.basicConfig(level=logging.DEBUG)
 
 try:
     birth_time = datetime.now() + timedelta(days=100)
-    pregnancy = Pregnancy(birth_time.strftime("%Y-%m-%d"))
-    screen_ui = ScreenUI(264, 176, pregnancy)
+    birthday = Birthday(birth_time.strftime("%Y-%m-%d"))
+    screen_ui = ScreenUI(264, 176, birthday)
     himage = screen_ui.draw()
     himage.show()
 

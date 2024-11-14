@@ -2,7 +2,7 @@ import os
 
 from PIL import Image, ImageDraw
 
-from .icons import carriage_icon_path, moon_icon_path
+from .icons import right_icon_path, left_icon_path
 from .fonts import create_font
 from .gray_scale import WHITE, DARK_GRAY, BLACK, LIGHT_GRAY
 
@@ -16,8 +16,8 @@ class ScreenUI:
     TEXT_MARGIN_TOP = 16
     TEXT_MARGIN_BOTTOM = 16
 
-    def __init__(self, width, height, pregnancy):
-        self.pregnancy = pregnancy
+    def __init__(self, width, height, birthday):
+        self.birthday = birthday
         self.width = width
         self.height = height
         self._img = Image.new('L', (self.width, self.height), 255)  # 255: clear the frame
@@ -27,45 +27,45 @@ class ScreenUI:
         _, _, w, h = self._img_draw.textbbox((0, 0), message, font=font)
         return w, h
 
-    def _draw_percent(self):
+    def _draw_age(self):
         font = create_font(46)
-        percent_str = self.pregnancy.get_percent_str()
-        w, h = self._calculate_text_size(percent_str, font)
+        age_str = self.birthday.get_age_str()
+        w, h = self._calculate_text_size(age_str, font)
         pos = ((self.width-w)/2, self.TEXT_MARGIN_TOP)
-        self._img_draw.text(pos, percent_str, font=font, fill=BLACK)
+        self._img_draw.text(pos, age_str, font=font, fill=BLACK)
 
-    def _draw_weekday(self):
+    def _draw__remaining_days(self):
         font = create_font(30)
-        percent_str = self.pregnancy.get_weekday_str()
-        w, h = self._calculate_text_size(percent_str, font)
+        days_till_next_str = self.birthday.get_days_till_next_str()
+        w, h = self._calculate_text_size(days_till_next_str, font)
         pos = ((self.width-w)/2, (self.height-h-self.TEXT_MARGIN_BOTTOM))
-        self._img_draw.text(pos, percent_str, font=font, fill=BLACK)
+        self._img_draw.text(pos, days_till_next_str, font=font, fill=BLACK)
 
-    def _draw_carriage(self):
-        carriage = Image.open(carriage_icon_path)
-        carriage.convert("1")
+    def _draw_right_icon(self):
+        right = Image.open(right_icon_path)
+        right.convert("1")
         circle_y1 = int(self.PROGRESS_BAR_Y_CENTER - self.ICON_CIRCLE_SIZE/2)
         circle_y2 = circle_y1 + self.ICON_CIRCLE_SIZE
         circle_x1 = self.width - self.ICON_CIRCLE_SIZE - self.ICON_X_MARGIN
         circle_x2 = self.width - self.ICON_X_MARGIN
         self._img_draw.ellipse((circle_x1, circle_y1, circle_x2, circle_y2), fill=DARK_GRAY)
 
-        icon_x = int(circle_x1 + (self.ICON_CIRCLE_SIZE - carriage.width)/2)
-        icon_y = int(circle_y1 + (self.ICON_CIRCLE_SIZE - carriage.height)/2)
-        self._img.paste(carriage, (icon_x, icon_y), carriage)
+        icon_x = int(circle_x1 + (self.ICON_CIRCLE_SIZE - right.width)/2)
+        icon_y = int(circle_y1 + (self.ICON_CIRCLE_SIZE - right.height)/2)
+        self._img.paste(right, (icon_x, icon_y), right)
 
-    def _draw_moon(self):
-        moon = Image.open(moon_icon_path)
-        moon.convert("1")
+    def _draw_left_icon(self):
+        left = Image.open(left_icon_path)
+        left.convert("1")
         circle_y1 = int(self.PROGRESS_BAR_Y_CENTER - self.ICON_CIRCLE_SIZE/2)
         circle_y2 = circle_y1 + self.ICON_CIRCLE_SIZE
         circle_x1 = self.ICON_X_MARGIN
         circle_x2 = circle_x1 + self.ICON_CIRCLE_SIZE
         self._img_draw.ellipse((circle_x1, circle_y1, circle_x2, circle_y2), fill=LIGHT_GRAY)
 
-        icon_x = int(circle_x1 + (self.ICON_CIRCLE_SIZE - moon.width)/2)
-        icon_y = int(circle_y1 + (self.ICON_CIRCLE_SIZE - moon.height)/2)
-        self._img.paste(moon, (icon_x, icon_y), moon)
+        icon_x = int(circle_x1 + (self.ICON_CIRCLE_SIZE - left.width)/2)
+        icon_y = int(circle_y1 + (self.ICON_CIRCLE_SIZE - left.height)/2)
+        self._img.paste(left, (icon_x, icon_y), left)
 
     def _draw_progress_bar_mid(self):
         self._draw_progress_done()
@@ -73,13 +73,13 @@ class ScreenUI:
         self._draw_progress_circle()
 
     def _draw_progress_bar(self):
-        self._draw_moon()
+        self._draw_left_icon()
         self._draw_progress_bar_mid()
-        self._draw_carriage()
+        self._draw_right_icon()
 
     def draw(self):
-        self._draw_percent()
-        self._draw_weekday()
+        self._draw_age()
+        self._draw__remaining_days()
         self._draw_progress_bar()
         return self._img
 
@@ -109,4 +109,4 @@ class ScreenUI:
 
     def _get_progress_bar_mid_x_point(self):
         offset = self.ICON_X_MARGIN + self.ICON_CIRCLE_SIZE
-        return offset + self._get_progress_bar_length()*self.pregnancy.get_progress()
+        return offset + self._get_progress_bar_length()*self.birthday.get_progress()
