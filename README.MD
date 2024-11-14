@@ -2,7 +2,7 @@
 
 A simple project that displays the birthday using [2.7 inch e-Paper HAT by Waveshare](https://www.waveshare.com/2.7inch-e-paper-hat.htm). Meant to be run on a Raspberry Pi.
 
-![Sample screen image](docs/sample-screen.png)
+![Sample screen image](docs/sample-screen.jpg)
 
 ![Completed project photo](docs/completed-project.jpg)
 
@@ -22,6 +22,7 @@ A simple project that displays the birthday using [2.7 inch e-Paper HAT by Waves
     ```
 5. Copy the `config.json.example` file as `config.json` and set the birth date.
 6. Configure cron to run the `main.py` file on a schedule (e.g. every 30 mins).
+7. Optional step: You can edit birthday.py to change wording from Czech language
 
 ## Testing
 If you wish to try out the package locally, you can run the `local_test.py` file. The script generates the image and displays it on your screen without the need of relying on packages that are available only on Raspberry Pi.

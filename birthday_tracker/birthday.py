@@ -1,5 +1,4 @@
-import math
-from datetime import datetime, timedelta
+from datetime import datetime
 
 class Birthday:
     def __init__(self, birth_date):
@@ -11,14 +10,50 @@ class Birthday:
         if next_birthday < now:
             next_birthday = next_birthday.replace(year=now.year + 1)
         return next_birthday
+    
+    def _get_last_birthday(self):
+        now = datetime.now()
+        last_birthday = self.birth_date.replace(year=now.year)
+        if last_birthday > now:
+            last_birthday = last_birthday.replace(year=now.year - 1)
+        return last_birthday
 
     def get_progress(self):
+        now = datetime.now()
         next_birthday = self._get_next_birthday()
-        total_birthday_secs = next_birthday.timestamp() - self.birth_date.timestamp()
-        return min(self.get_birthday_secs() / total_birthday_secs, 1)
+        last_birthday = self._get_last_birthday()
+        
+        year_span = next_birthday.timestamp() - last_birthday.timestamp()
+        elapsed = now.timestamp() - last_birthday.timestamp()
+        
+        return min(elapsed / year_span, 1)
+    
+    def get_age_parts(self):
+        years = self.get_total_years()
+        months = self.get_total_months() % 12
 
-    def get_age_str(self):
-        return f'{self.get_total_years()}r {self.get_total_months()}m'
+        parts = []
+        if years > 0:
+            if years == 1:
+                year_word = "rok"
+            elif 2 <= years <= 4:
+                year_word = "roky"
+            else:
+                year_word = "let"
+            parts.append((str(years), year_word))
+        
+        if months > 0:
+            if parts:
+                month_word = "m"
+            elif months == 1:
+                month_word = "měsíc"
+            elif 2 <= months <= 4:
+                month_word = "měsíce"
+            else:
+                month_word = "měsíců"
+            parts.append((str(months), month_word))
+        
+        return parts if parts else [('0', 'měsíc')]
 
     def get_days_till_next_str(self):
         return f'Zbývá: {self.get_birthday_day()}d'
@@ -26,9 +61,6 @@ class Birthday:
     def get_birthday_day(self):
         next_birthday = self._get_next_birthday()
         return (next_birthday - datetime.now()).days
-
-    def get_birthday_secs(self):
-        return time.time() - self.birth_date.timestamp()
 
     def get_total_years(self):
         now = datetime.now()

@@ -1,5 +1,3 @@
-import os
-
 from PIL import Image, ImageDraw
 
 from .icons import right_icon_path, left_icon_path
@@ -28,11 +26,35 @@ class ScreenUI:
         return w, h
 
     def _draw_age(self):
-        font = create_font(46)
-        age_str = self.birthday.get_age_str()
-        w, h = self._calculate_text_size(age_str, font)
-        pos = ((self.width-w)/2, self.TEXT_MARGIN_TOP)
-        self._img_draw.text(pos, age_str, font=font, fill=BLACK)
+        number_font = create_font(70)
+        unit_font = create_font(40)
+        
+        age_parts = self.birthday.get_age_parts()
+        total_width = 0
+        max_height = 0
+        
+        for number, unit in age_parts:
+            num_w, num_h = self._calculate_text_size(number, number_font)
+            unit_w, unit_h = self._calculate_text_size(unit, unit_font)
+            total_width += num_w + unit_w + 10
+            max_height = max(max_height, num_h)
+        
+        if age_parts:
+            total_width -= 10
+        
+        x = (self.width - total_width) / 2
+        y = max(0, self.TEXT_MARGIN_TOP - max_height/4)
+        
+        for number, unit in age_parts:
+            num_w, num_h = self._calculate_text_size(number, number_font)
+            self._img_draw.text((x, y), number, font=number_font, fill=BLACK)
+            
+            x += num_w
+            unit_w, unit_h = self._calculate_text_size(unit, unit_font)
+            unit_y = y + (num_h - unit_h)
+            self._img_draw.text((x, unit_y), unit, font=unit_font, fill=BLACK)
+            
+            x += unit_w + 10
 
     def _draw__remaining_days(self):
         font = create_font(30)
