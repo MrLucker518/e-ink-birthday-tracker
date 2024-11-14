@@ -4,7 +4,7 @@ A simple project that displays the birthday using [2.7 inch e-Paper HAT by Waves
 
 ![Sample screen image](docs/sample-screen.jpg)
 
-![Completed project photo](docs/completed-project.jpg)
+![Completed project photo](docs/completed-project1.jpg)
 
 ## Setup
 1. Configure your Raspberry Pi according to the [docs provided by Waveshare](https://www.waveshare.com/wiki/2.7inch_e-Paper_HAT_Manual#Working_With_Raspberry_Pi).
