@@ -1,6 +1,6 @@
-# E-ink Pregnancy Tracker
+# E-ink Birthday Tracker
 
-A simple project that displays the status of a pregnancy using [2.7 inch e-Paper HAT by Waveshare](https://www.waveshare.com/2.7inch-e-paper-hat.htm). Meant to be run on a Raspberry Pi.
+A simple project that displays the birthday using [2.7 inch e-Paper HAT by Waveshare](https://www.waveshare.com/2.7inch-e-paper-hat.htm). Meant to be run on a Raspberry Pi.
 
 ![Sample screen image](docs/sample-screen.png)
 
@@ -10,7 +10,7 @@ A simple project that displays the status of a pregnancy using [2.7 inch e-Paper
 1. Configure your Raspberry Pi according to the [docs provided by Waveshare](https://www.waveshare.com/wiki/2.7inch_e-Paper_HAT_Manual#Working_With_Raspberry_Pi).
 2. Clone this repo:
     ```
-    git clone https://github.com/grappeq/e-ink-pregnancy-tracker.git
+    git clone https://github.com/MrLucker518/e-ink-birthday-tracker.git
     ```
 3. Install dependencies:
     ```
@@ -20,7 +20,7 @@ A simple project that displays the status of a pregnancy using [2.7 inch e-Paper
     ```
     sudo apt-get install libopenjp2-7
     ```
-5. Copy the `config.json.example` file as `config.json` and set the expected birth date.
+5. Copy the `config.json.example` file as `config.json` and set the birth date.
 6. Configure cron to run the `main.py` file on a schedule (e.g. every 30 mins).
 
 ## Testing
