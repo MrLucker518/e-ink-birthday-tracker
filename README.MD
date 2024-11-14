@@ -21,11 +21,24 @@ A simple project that displays the birthday using [2.7 inch e-Paper HAT by Waves
     sudo apt-get install libopenjp2-7
     ```
 5. Copy the `config.json.example` file as `config.json` and set the birth date.
-6. Configure cron to run the `main.py` file on a schedule (e.g. every 30 mins).
+    ```
+    cp config.json.example config.json
+    nano config.json
+    ```
+6. Configure cron to run the `main.py` file on a schedule (e.g. once a day at midnight).
+    ```
+    crontab -e
+    ```
+    ```
+    0 0 * * * /usr/bin/python3 /home/pi/e-ink-birthday-tracker/main.py
+    ```
 7. Optional step: You can edit birthday.py to change wording from Czech language
 
 ## Testing
 If you wish to try out the package locally, you can run the `local_test.py` file. The script generates the image and displays it on your screen without the need of relying on packages that are available only on Raspberry Pi.
+    ```
+    python3 local_test.py
+    ```
 
 ## Useful resources
 * [2.7 inch e-Paper HAT docs](https://www.waveshare.com/wiki/2.7inch_e-Paper_HAT)
