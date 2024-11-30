@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw
 
-from .icons import right_icon_path, left_icon_path
+from .icons import right_icon_path, left_icon_path, cake_icon_path
 from .fonts import create_font
 from .gray_scale import WHITE, DARK_GRAY, BLACK, LIGHT_GRAY
 
@@ -26,7 +26,7 @@ class ScreenUI:
         return w, h
 
     def _draw_age(self):
-        number_font = create_font(70)
+        number_font = create_font(60)
         unit_font = create_font(40)
         
         age_parts = self.birthday.get_age_parts()
@@ -100,9 +100,55 @@ class ScreenUI:
         self._draw_right_icon()
 
     def draw(self):
-        self._draw_age()
-        self._draw__remaining_days()
-        self._draw_progress_bar()
+        if self.birthday.is_birthday_day():
+            # Clear the frame first with white background
+            self._img = Image.new('L', (self.width, self.height), 255)
+            self._img_draw = ImageDraw.Draw(self._img)
+            
+            # Load and prepare cake image
+            cake = Image.open(cake_icon_path)
+            cake = cake.convert('L')  # Convert to grayscale
+            cake = Image.eval(cake, lambda x: 255 - x)  # Invert colors
+            
+            # Calculate size to fill the display while maintaining aspect ratio
+            margin = 5
+            display_width = self.width - (2 * margin)
+            display_height = self.height - (2 * margin)
+            
+            width_ratio = display_width / cake.width
+            height_ratio = display_height / cake.height
+            scale_ratio = min(width_ratio, height_ratio)
+            
+            new_width = int(cake.width * scale_ratio)
+            new_height = int(cake.height * scale_ratio)
+            
+            # Resize the cake
+            cake = cake.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            
+            # Calculate position to center the cake
+            icon_x = (self.width - new_width) // 2
+            icon_y = (self.height - new_height) // 2
+            
+            # Paste the cake icon
+            self._img.paste(cake, (icon_x, icon_y))
+            
+            # Add the year text
+            years = str(self.birthday.get_total_years())
+            font = create_font(max(new_height // 3, 80))  # Adjust font size based on cake size
+            
+            # Calculate text size
+            w, h = self._calculate_text_size(years, font)
+            
+            # Calculate text position (center of the cake)
+            text_x = (self.width - w) // 2
+            text_y = (self.height - h) // 2
+            
+            # Draw the text
+            self._img_draw.text((text_x, text_y), years, font=font, fill=BLACK)
+        else:
+            self._draw_age()
+            self._draw__remaining_days()
+            self._draw_progress_bar()
         return self._img
 
     def _draw_progress_done(self):

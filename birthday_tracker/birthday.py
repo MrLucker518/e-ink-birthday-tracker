@@ -31,6 +31,7 @@ class Birthday:
     def get_age_parts(self):
         years = self.get_total_years()
         months = self.get_total_months() % 12
+        days = self.get_total_days()
 
         parts = []
         if years > 0:
@@ -52,11 +53,22 @@ class Birthday:
             else:
                 month_word = "měsíců"
             parts.append((str(months), month_word))
+
+        if days > 0:
+            if parts:
+                day_word = "d"
+            elif days == 1:
+                day_word = "den"
+            elif 2 <= days <= 4:
+                day_word = "dny"
+            else:
+                day_word = "dní"
+            parts.append((str(days), day_word))
         
-        return parts if parts else [('0', 'měsíc')]
+        return parts if parts else [('0', 'dní')]
 
     def get_days_till_next_str(self):
-        return f'Zbývá: {self.get_birthday_day()}d'
+        return f'Narozeniny za: {self.get_birthday_day()}d'
 
     def get_birthday_day(self):
         next_birthday = self._get_next_birthday()
@@ -74,3 +86,14 @@ class Birthday:
         if now.day < self.birth_date.day:
             total_months -= 1
         return total_months
+    
+    def get_total_days(self):
+        now = datetime.now()
+        if self.birth_date.day > now.day:
+            return now.day
+        else:
+            return now.day - self.birth_date.day
+        
+    def is_birthday_day(self):
+        now = datetime.now()
+        return (now.month, now.day) == (self.birth_date.month, self.birth_date.day)
