@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class Birthday:
     def __init__(self, birth_date):
@@ -89,10 +89,13 @@ class Birthday:
     
     def get_total_days(self):
         now = datetime.now()
-        if self.birth_date.day > now.day:
-            return now.day
+        if now.day < self.birth_date.day:
+            previous_month = now.replace(day=1) - timedelta(days=1)
+            days = (previous_month.day - self.birth_date.day) + now.day
         else:
-            return now.day - self.birth_date.day
+            days = now.day - self.birth_date.day
+        
+        return days
         
     def is_birthday_day(self):
         now = datetime.now()
