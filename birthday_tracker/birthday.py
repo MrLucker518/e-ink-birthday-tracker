@@ -68,7 +68,7 @@ class Birthday:
         return parts if parts else [('0', 'dní')]
 
     def get_days_till_next_str(self):
-        return f'Narozeniny za: {self.get_birthday_day()}d'
+        return f'Zbývá: {self.get_birthday_day()}d'
 
     def get_birthday_day(self):
         next_birthday = self._get_next_birthday()

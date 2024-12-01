@@ -141,7 +141,7 @@ class ScreenUI:
             
             # Calculate text position (center of the cake)
             text_x = (self.width - w) // 2
-            text_y = icon_y + new_height * 0.7 - h // 2 - 5
+            text_y = icon_y + new_height * 0.7 - h // 2 - 4
             
             # Draw the text
             self._img_draw.text((text_x, text_y), years, font=font, fill=BLACK)
