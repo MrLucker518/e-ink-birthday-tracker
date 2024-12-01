@@ -111,13 +111,13 @@ class ScreenUI:
             cake = Image.eval(cake, lambda x: 255 - x)  # Invert colors
             
             # Calculate size to fill the display while maintaining aspect ratio
-            margin = 5
+            margin = 20
             display_width = self.width - (2 * margin)
             display_height = self.height - (2 * margin)
             
             width_ratio = display_width / cake.width
             height_ratio = display_height / cake.height
-            scale_ratio = min(width_ratio, height_ratio)
+            scale_ratio = min(width_ratio, height_ratio) * 1.5
             
             new_width = int(cake.width * scale_ratio)
             new_height = int(cake.height * scale_ratio)
@@ -134,14 +134,14 @@ class ScreenUI:
             
             # Add the year text
             years = str(self.birthday.get_total_years())
-            font = create_font(max(new_height // 3, 80))  # Adjust font size based on cake size
+            font = create_font(90)
             
             # Calculate text size
             w, h = self._calculate_text_size(years, font)
             
             # Calculate text position (center of the cake)
             text_x = (self.width - w) // 2
-            text_y = (self.height - h) // 2
+            text_y = icon_y + new_height * 0.7 - h // 2 - 5
             
             # Draw the text
             self._img_draw.text((text_x, text_y), years, font=font, fill=BLACK)
