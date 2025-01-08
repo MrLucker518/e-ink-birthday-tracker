@@ -28,43 +28,45 @@ class Birthday:
         return min(elapsed / year_span, 1)
     
     def get_age_parts(self):
-        years = self.get_total_years()
-        months = self.get_total_months() % 12
-        days = self.get_total_days()
-
-        parts = []
-        if years > 0:
-            if years == 1:
-                year_word = "rok"
-            elif 2 <= years <= 4:
-                year_word = "roky"
-            else:
-                year_word = "let"
-            parts.append((str(years), year_word))
+        rd = relativedelta(self.current_date, self.birth_date)
         
-        if months > 0:
-            if parts:
-                month_word = "m"
-            elif months == 1:
-                month_word = "měsíc"
-            elif 2 <= months <= 4:
-                month_word = "měsíce"
-            else:
-                month_word = "měsíců"
-            parts.append((str(months), month_word))
+        years = rd.years
+        months = rd.months
+        days = rd.days
+        weeks = days // 7
+        days = days % 7
 
-        if days > 0:
-            if parts:
-                day_word = "d"
-            elif days == 1:
-                day_word = "den"
-            elif 2 <= days <= 4:
-                day_word = "dny"
-            else:
-                day_word = "dní"
-            parts.append((str(days), day_word))
+        def get_word_or_abbrev(num, words, abbrev, use_abbrev):
+            if num <= 0:
+                return None
+            if use_abbrev:
+                if abbrev == 'l/r':
+                    return ('1' if num == 1 else str(num), 'r' if 1 <= num <= 4 else 'l')
+                return (str(num), abbrev)
+            if len(words) == 3:
+                return (str(num), words[0] if num == 1 else words[1] if 2 <= num <= 4 else words[2])
+            return None
+
+        use_abbrev = False
+
+        year_part = get_word_or_abbrev(years, ['rok', 'roky', 'let'], 'l/r', use_abbrev)
+        month_part = get_word_or_abbrev(months, ['měsíc', 'měsíce', 'měsíců'], 'm', use_abbrev)
+        week_part = get_word_or_abbrev(weeks, ['týden', 'týdny', 'týdnů'], 't', use_abbrev)
+        day_part = get_word_or_abbrev(days, ['den', 'dny', 'dní'], 'd', use_abbrev)
+
+        all_parts = [p for p in [year_part, month_part, week_part, day_part] if p]
         
-        return parts if parts else [('0', 'dní')]
+        if len(all_parts) > 1:
+            use_abbrev = True
+            return [get_word_or_abbrev(num, words, abbrev, use_abbrev) 
+                   for num, (words, abbrev) in [
+                       (years, (['rok', 'roky', 'let'], 'l/r')),
+                       (months, (['měsíc', 'měsíce', 'měsíců'], 'm')),
+                       (weeks, (['týden', 'týdny', 'týdnů'], 't')),
+                       (days, (['den', 'dny', 'dní'], 'd'))
+                   ] if num > 0]
+
+        return all_parts if all_parts else [('0', 'dní')]
 
     def get_days_till_next_str(self):
         return f'Zbývá: {self.get_birthday_day()}d'
@@ -74,21 +76,7 @@ class Birthday:
         return (next_birthday - self.current_date).days
 
     def get_total_years(self):
-
         return self.current_date.year - self.birth_date.year - ((self.current_date.month, self.current_date.day) < (self.birth_date.month, self.birth_date.day))
-
-    def get_total_months(self):
-        years_diff = self.current_date.year - self.birth_date.year
-        months_diff = self.current_date.month - self.birth_date.month
-        total_months = years_diff * 12 + months_diff
-        if self.current_date.day < self.birth_date.day:
-            total_months -= 1
-        return total_months
-
-    def get_total_days(self):
-        months_difference = relativedelta(self.current_date, self.birth_date)
-        remaining_days = (self.current_date - (self.birth_date + relativedelta(months=months_difference.months))).days
-        return remaining_days
         
     def is_birthday_day(self):
         return (self.current_date.month, self.current_date.day) == (self.birth_date.month, self.birth_date.day)
