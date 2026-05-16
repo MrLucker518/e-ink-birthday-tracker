@@ -13,6 +13,8 @@ class ScreenUI:
     PROGRESS_BAR_HEIGHT = 10
     TEXT_MARGIN_TOP = 16
     TEXT_MARGIN_BOTTOM = 16
+    AGE_TOP_PADDING = 4
+    AGE_BOTTOM_PADDING = 16
 
     def __init__(self, width, height, birthday):
         self.birthday = birthday
@@ -25,36 +27,137 @@ class ScreenUI:
         _, _, w, h = self._img_draw.textbbox((0, 0), message, font=font)
         return w, h
 
-    def _draw_age(self):
-        number_font = create_font(60)
-        unit_font = create_font(40)
-        
-        age_parts = self.birthday.get_age_parts()
+    def _measure_age_parts(self, age_parts, number_font, unit_font, spacing):
+        segments = []
         total_width = 0
-        max_height = 0
-        
-        for number, unit in age_parts:
-            num_w, num_h = self._calculate_text_size(number, number_font)
-            unit_w, unit_h = self._calculate_text_size(unit, unit_font)
-            total_width += num_w + unit_w + 10
-            max_height = max(max_height, num_h)
-        
-        if age_parts:
-            total_width -= 10
-        
-        x = (self.width - total_width) / 2
-        y = max(0, self.TEXT_MARGIN_TOP - max_height/4)
-        
-        for number, unit in age_parts:
-            num_w, num_h = self._calculate_text_size(number, number_font)
-            self._img_draw.text((x, y), number, font=number_font, fill=BLACK)
-            
+        num_ascent, num_descent = number_font.getmetrics()
+        unit_ascent, unit_descent = unit_font.getmetrics()
+        baseline = max(num_ascent, unit_ascent)
+        line_height = baseline + max(num_descent, unit_descent)
+
+        for idx, (number, unit) in enumerate(age_parts):
+            num_w, _ = self._calculate_text_size(number, number_font)
+            unit_w, _ = self._calculate_text_size(unit, unit_font)
+            segment_w = num_w + unit_w
+            total_width += segment_w
+            if idx < len(age_parts) - 1:
+                total_width += spacing
+            segments.append((number, unit, num_w, unit_w))
+
+        return {
+            'segments': segments,
+            'total_width': total_width,
+            'line_height': line_height,
+            'baseline': baseline,
+        }
+
+    def _find_single_line_age_layout(self, age_parts, max_width, max_height):
+        for number_size in range(60, 17, -2):
+            unit_size = max(14, int(number_size * 0.62))
+            spacing = max(2, int(number_size * 0.12))
+            number_font = create_font(number_size)
+            unit_font = create_font(unit_size)
+            metrics = self._measure_age_parts(age_parts, number_font, unit_font, spacing)
+
+            if metrics['total_width'] <= max_width and metrics['line_height'] <= max_height:
+                return {
+                    'number_font': number_font,
+                    'unit_font': unit_font,
+                    'spacing': spacing,
+                    'metrics': metrics,
+                }
+
+        return None
+
+    def _draw_age_line(self, age_parts, y, layout):
+        metrics = layout['metrics']
+        x = (self.width - metrics['total_width']) / 2
+        number_font = layout['number_font']
+        unit_font = layout['unit_font']
+        num_ascent, _ = number_font.getmetrics()
+        unit_ascent, _ = unit_font.getmetrics()
+        baseline_y = y + metrics['baseline']
+        number_y = baseline_y - num_ascent
+        unit_y = baseline_y - unit_ascent
+
+        for idx, (number, unit, num_w, unit_w) in enumerate(metrics['segments']):
+            self._img_draw.text((x, number_y), number, font=number_font, fill=BLACK)
             x += num_w
-            unit_w, unit_h = self._calculate_text_size(unit, unit_font)
-            unit_y = y + (num_h - unit_h)
             self._img_draw.text((x, unit_y), unit, font=unit_font, fill=BLACK)
-            
-            x += unit_w + 10
+            x += unit_w
+            if idx < len(metrics['segments']) - 1:
+                x += layout['spacing']
+
+    def _find_two_line_age_layout(self, line_1_parts, line_2_parts, max_width, max_height):
+        for number_size in range(52, 17, -2):
+            unit_size = max(14, int(number_size * 0.62))
+            spacing = max(2, int(number_size * 0.12))
+            line_gap = max(2, int(number_size * 0.15))
+            number_font = create_font(number_size)
+            unit_font = create_font(unit_size)
+
+            metrics_1 = self._measure_age_parts(line_1_parts, number_font, unit_font, spacing)
+            metrics_2 = self._measure_age_parts(line_2_parts, number_font, unit_font, spacing)
+            total_height = metrics_1['line_height'] + line_gap + metrics_2['line_height']
+
+            if (
+                metrics_1['total_width'] <= max_width
+                and metrics_2['total_width'] <= max_width
+                and total_height <= max_height
+            ):
+                return {
+                    'line_1': {
+                        'number_font': number_font,
+                        'unit_font': unit_font,
+                        'spacing': spacing,
+                        'metrics': metrics_1,
+                    },
+                    'line_2': {
+                        'number_font': number_font,
+                        'unit_font': unit_font,
+                        'spacing': spacing,
+                        'metrics': metrics_2,
+                    },
+                    'line_gap': line_gap,
+                }
+
+        return None
+
+    def _draw_age(self):
+        age_parts = self.birthday.get_age_parts()
+        top_area_top = self.AGE_TOP_PADDING
+        top_area_bottom = int(self.PROGRESS_BAR_Y_CENTER - self.PROGRESS_BAR_HEIGHT / 2) - self.AGE_BOTTOM_PADDING
+        max_width = self.width - 2 * self.ICON_X_MARGIN
+        max_height = max(12, top_area_bottom - top_area_top)
+
+        single_line_layout = self._find_single_line_age_layout(age_parts, max_width, max_height)
+        if single_line_layout:
+            line_height = single_line_layout['metrics']['line_height']
+            y = top_area_top + (max_height - line_height) / 2
+            self._draw_age_line(age_parts, y, single_line_layout)
+            return
+
+        split_index = max(1, len(age_parts) // 2)
+        line_1_parts = age_parts[:split_index]
+        line_2_parts = age_parts[split_index:]
+
+        two_line_layout = self._find_two_line_age_layout(line_1_parts, line_2_parts, max_width, max_height)
+        if two_line_layout:
+            line_1_height = two_line_layout['line_1']['metrics']['line_height']
+            line_2_height = two_line_layout['line_2']['metrics']['line_height']
+            total_height = line_1_height + two_line_layout['line_gap'] + line_2_height
+            y1 = top_area_top + (max_height - total_height) / 2
+            y2 = y1 + line_1_height + two_line_layout['line_gap']
+            self._draw_age_line(line_1_parts, y1, two_line_layout['line_1'])
+            self._draw_age_line(line_2_parts, y2, two_line_layout['line_2'])
+            return
+
+        compact_font = create_font(18)
+        compact_text = ''.join([f'{number}{unit}' for number, unit in age_parts])
+        compact_w, compact_h = self._calculate_text_size(compact_text, compact_font)
+        x = (self.width - compact_w) / 2
+        y = top_area_top + (max_height - compact_h) / 2
+        self._img_draw.text((x, y), compact_text, font=compact_font, fill=BLACK)
 
     def _draw__remaining_days(self):
         font = create_font(30)
