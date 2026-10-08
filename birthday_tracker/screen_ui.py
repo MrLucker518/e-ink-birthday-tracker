@@ -237,14 +237,19 @@ class ScreenUI:
             
             # Add the year text
             years = str(self.birthday.get_total_years())
-            font = create_font(90)
-            
-            # Calculate text size
-            w, h = self._calculate_text_size(years, font)
-            
-            # Calculate text position (center of the cake)
-            text_x = (self.width - w) // 2
-            text_y = icon_y + new_height * 0.7 - h // 2 - 4
+            text_left = max(0, icon_x + new_width * 6 / 24)
+            text_right = min(self.width, icon_x + new_width * 18 / 24)
+            text_top = max(0, icon_y + new_height * 13 / 24)
+            text_bottom = min(self.height, icon_y + new_height * 19 / 24)
+            for font_size in range(90, 0, -1):
+                font = create_font(font_size)
+                left, top, right, bottom = self._img_draw.textbbox((0, 0), years, font=font)
+                text_width = right - left
+                text_height = bottom - top
+                if text_width <= text_right - text_left and text_height <= text_bottom - text_top:
+                    break
+            text_x = (text_left + text_right - text_width) / 2 - left
+            text_y = (text_top + text_bottom - text_height) / 2 - top
             
             # Draw the text
             self._img_draw.text((text_x, text_y), years, font=font, fill=BLACK)
